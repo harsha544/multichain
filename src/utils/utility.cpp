@@ -6,6 +6,7 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <ctype.h>
+#include <compat/byteswap.h>
 #endif
 
 #define MC_DCT_BUF_ALLOC_ITEMS          256
@@ -62,9 +63,13 @@ void mc_Delete(void *ptr)
     delete [] (int64_t*)ptr;
 }
 
-void mc_PutLE(void *dest,void *src,int dest_size)
+void mc_PutLE(void *dest,long src,int dest_size)
 {
-    memcpy(dest,src,dest_size);                                                 // Assuming all systems are little endian
+   #if WORDS_BIGENDIAN == 1
+	uint64_t src_tmp = src;
+	src = bswap_64(src_tmp);
+   #endif
+	memcpy(dest, &src,dest_size);
 }
 
 int64_t mc_GetLE(void *src,int size)
@@ -858,7 +863,7 @@ int mc_PutVarInt(unsigned char *buf,int max_size,int64_t value)
         return -1;
     }
     
-    mc_PutLE(buf+shift,&value,varint_size);    
+    mc_PutLE(buf+shift,value,varint_size);
     return shift+varint_size;
 }
 

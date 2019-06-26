@@ -643,7 +643,7 @@ int MultichainCollectChunks(mc_ChunkCollector* collector)
             ptrOut=&(payload[0]);
             *ptrOut=MC_RDT_EXPIRATION;
             ptrOut++;
-            mc_PutLE(ptrOut,&dest_expiration,sizeof(dest_expiration));
+            mc_PutLE(ptrOut,dest_expiration,sizeof(dest_expiration));
             ptrOut+=sizeof(dest_expiration);
             if(vRPPayload.size())
             {

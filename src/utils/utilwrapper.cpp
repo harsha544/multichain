@@ -1023,7 +1023,11 @@ std::string MultichainServerAddress()
     if(mc_gState->m_IPv4Address)
     {
         ptr=(unsigned char *)(&(mc_gState->m_IPv4Address));
-        result+=strprintf("%u.%u.%u.%u",ptr[3],ptr[2],ptr[1],ptr[0]);
+#if WORDS_BIGENDIAN == 1
+        result+=strprintf("%u.%u.%u.%u",ptr[0],ptr[1],ptr[2],ptr[3]);
+#else
+         result+=strprintf("%u.%u.%u.%u",ptr[3],ptr[2],ptr[1],ptr[0]);
+#endif
     }
     else
     {

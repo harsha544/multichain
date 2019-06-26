@@ -552,7 +552,7 @@ int64_t mc_GetABCoinQuantity(void *ptr,int coin_id)
 
 void mc_SetABCoinQuantity(void *ptr,int coin_id,int64_t quantity)
 {
-    mc_PutLE((unsigned char*)ptr+MC_AST_ASSET_QUANTITY_OFFSET+coin_id*MC_AST_ASSET_QUANTITY_SIZE,&quantity,MC_AST_ASSET_QUANTITY_SIZE);        
+    mc_PutLE((unsigned char*)ptr+MC_AST_ASSET_QUANTITY_OFFSET+coin_id*MC_AST_ASSET_QUANTITY_SIZE,quantity,MC_AST_ASSET_QUANTITY_SIZE);        
 }
 
 
@@ -719,8 +719,8 @@ bool InsertCoinIntoMatrix(int coin_id,                                          
     
     
     memcpy(buf_map,&hash,32);                                                   // Updating txid/vout->coin id map
-    mc_PutLE(buf_map+32,&out_i,4);
-    mc_PutLE(buf_map+36,&coin_id,4);
+    mc_PutLE(buf_map+32,out_i,4);
+    mc_PutLE(buf_map+36,coin_id,4);
     in_map->Add(buf_map,buf_map+36);
 
     for(int i=0;i<tmp_amounts->GetCount();i++)                                  // Inserting asset amounts into the matrix
@@ -1206,7 +1206,7 @@ bool CalculateChangeAmounts(CWallet *lpWallet,                                  
                             memset(buf,0,MC_AST_ASSET_FULLREF_BUF_SIZE+sizeof(int));
                             memcpy(buf,tmp_amounts->GetRow(i),MC_AST_ASSET_QUANTITY_OFFSET);
                             mc_SetABQuantity(buf,quantity);
-                            mc_PutLE(buf+MC_AST_ASSET_FULLREF_BUF_SIZE,&group_id,sizeof(int));
+                            mc_PutLE(buf+MC_AST_ASSET_FULLREF_BUF_SIZE,group_id,sizeof(int));
                             err=change_amounts->Add(buf);
                             if(err)
                             {
@@ -1373,7 +1373,7 @@ bool SelectCoinsToUse(const vector<COutPoint>* lpCoinsToUse,                    
         out_i=coin.n;
 
         memcpy(buf_map,&hash,32);
-        mc_PutLE(buf_map+32,&out_i,4);
+        mc_PutLE(buf_map+32,out_i,4);
         int row=in_map->Seek(buf_map);
         
         if(row<0)
@@ -1474,7 +1474,7 @@ bool SelectAssetCoins(CWallet *lpWallet,                                        
             out_i=pcoin.second;
 
             memcpy(buf_map,&hash,32);
-            mc_PutLE(buf_map+32,&out_i,4);
+            mc_PutLE(buf_map+32,out_i,4);
             int row=in_map->Seek(buf_map);
             coin_id=mc_GetLE(in_map->GetRow(row)+36,4);
             quantity=1;
@@ -2321,7 +2321,7 @@ bool CreateAssetGroupingTransaction(CWallet *lpWallet, const vector<pair<CScript
     memset(in_row,-1,in_size);
     memset(in_row,0,MC_AST_ASSET_QUANTITY_OFFSET);
     type=0;
-    mc_PutLE(in_row+4,&type,4);
+    mc_PutLE(in_row+4,type,4);
     mc_SetABRefType(in_row,MC_AST_ASSET_REF_TYPE_SPECIAL);
     in_amounts->Add(in_row);
     
@@ -2329,7 +2329,7 @@ bool CreateAssetGroupingTransaction(CWallet *lpWallet, const vector<pair<CScript
     in_special_row[1]=in_amounts->GetCount();
     memset(in_row,0,in_size);
     type=0;
-    mc_PutLE(in_row+4,&type,4);
+    mc_PutLE(in_row+4,type,4);
     mc_SetABRefType(in_row,MC_AST_ASSET_REF_TYPE_SPECIAL);
     in_amounts->Add(in_row);
     
@@ -2337,7 +2337,7 @@ bool CreateAssetGroupingTransaction(CWallet *lpWallet, const vector<pair<CScript
     in_special_row[2]=in_amounts->GetCount();
     memset(in_row,0,in_size);
     type=0;
-    mc_PutLE(in_row+4,&type,4);
+    mc_PutLE(in_row+4,type,4);
     mc_SetABRefType(in_row,MC_AST_ASSET_REF_TYPE_SPECIAL);
     in_amounts->Add(in_row);
     
@@ -2345,7 +2345,7 @@ bool CreateAssetGroupingTransaction(CWallet *lpWallet, const vector<pair<CScript
     in_special_row[3]=in_amounts->GetCount();
     memset(in_row,0,in_size);
     type=MC_PTP_SEND;
-    mc_PutLE(in_row+4,&type,4);
+    mc_PutLE(in_row+4,type,4);
     mc_SetABRefType(in_row,MC_AST_ASSET_REF_TYPE_SPECIAL);
     in_amounts->Add(in_row);
     
@@ -2354,7 +2354,7 @@ bool CreateAssetGroupingTransaction(CWallet *lpWallet, const vector<pair<CScript
     memset(in_row,0,in_size);
     type=MC_PTP_SEND;
     mc_SetABRefType(in_row,MC_AST_ASSET_REF_TYPE_SPECIAL);
-    mc_PutLE(in_row+4,&type,4);
+    mc_PutLE(in_row+4,type,4);
     in_amounts->Add(in_row);
     
                                                                                 // Issue row, coin value if input has issue permission, 0 otherwise
@@ -2363,7 +2363,7 @@ bool CreateAssetGroupingTransaction(CWallet *lpWallet, const vector<pair<CScript
         in_special_row[5]=in_amounts->GetCount();
         memset(in_row,0,in_size);
         type=MC_PTP_ISSUE | MC_PTP_SEND;
-        mc_PutLE(in_row+4,&type,4);
+        mc_PutLE(in_row+4,type,4);
         mc_SetABRefType(in_row,MC_AST_ASSET_REF_TYPE_SPECIAL);
         in_amounts->Add(in_row);
     }
@@ -2374,7 +2374,7 @@ bool CreateAssetGroupingTransaction(CWallet *lpWallet, const vector<pair<CScript
         in_special_row[6]=in_amounts->GetCount();
         memset(in_row,0,in_size);
         type=MC_PTP_ADMIN | MC_PTP_SEND;
-        mc_PutLE(in_row+4,&type,4);
+        mc_PutLE(in_row+4,type,4);
         mc_SetABRefType(in_row,MC_AST_ASSET_REF_TYPE_SPECIAL);
         in_amounts->Add(in_row);
     }
@@ -2385,7 +2385,7 @@ bool CreateAssetGroupingTransaction(CWallet *lpWallet, const vector<pair<CScript
         in_special_row[7]=in_amounts->GetCount();
         memset(in_row,0,in_size);
         type=MC_PTP_ACTIVATE | MC_PTP_SEND;
-        mc_PutLE(in_row+4,&type,4);
+        mc_PutLE(in_row+4,type,4);
         mc_SetABRefType(in_row,MC_AST_ASSET_REF_TYPE_SPECIAL);
         in_amounts->Add(in_row);
     }
@@ -2396,7 +2396,7 @@ bool CreateAssetGroupingTransaction(CWallet *lpWallet, const vector<pair<CScript
         in_special_row[8]=in_amounts->GetCount();
         memset(in_row,0,in_size);
         type=MC_PTP_WRITE | MC_PTP_SEND;
-        mc_PutLE(in_row+4,&type,4);
+        mc_PutLE(in_row+4,type,4);
         mc_SetABRefType(in_row,MC_AST_ASSET_REF_TYPE_SPECIAL);
         in_amounts->Add(in_row);
     }
@@ -2407,7 +2407,7 @@ bool CreateAssetGroupingTransaction(CWallet *lpWallet, const vector<pair<CScript
         in_special_row[9]=in_amounts->GetCount();
         memset(in_row,0,in_size);
         type=MC_PTP_CREATE | MC_PTP_SEND;
-        mc_PutLE(in_row+4,&type,4);
+        mc_PutLE(in_row+4,type,4);
         mc_SetABRefType(in_row,MC_AST_ASSET_REF_TYPE_SPECIAL);
         in_amounts->Add(in_row);
     }

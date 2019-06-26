@@ -1075,10 +1075,10 @@ int mc_Script::SetPermission(uint32_t type,uint32_t from,uint32_t to,uint32_t ti
     ptr[MC_DCT_SCRIPT_IDENTIFIER_LEN]=MC_DCT_SCRIPT_MULTICHAIN_PERMISSIONS_PREFIX;
     
     ptr+=MC_DCT_SCRIPT_IDENTIFIER_LEN+1;
-    mc_PutLE(ptr+ 0,&type,4);
-    mc_PutLE(ptr+ 4,&from,4);
-    mc_PutLE(ptr+ 8,&to,4);
-    mc_PutLE(ptr+12,&timestamp,4);
+    mc_PutLE(ptr+ 0,type,4);
+    mc_PutLE(ptr+ 4,from,4);
+    mc_PutLE(ptr+ 8,to,4);
+    mc_PutLE(ptr+12,timestamp,4);
     
     return SetData(buf,MC_DCT_SCRIPT_IDENTIFIER_LEN+1+16);
 }
@@ -1177,7 +1177,7 @@ int mc_Script::SetBlockSignature(const unsigned char* sig,int sig_size,uint32_t 
         return err;
     }
     
-    mc_PutLE(buf,&sig_size,1);
+    mc_PutLE(buf,sig_size,1);
     err=SetData(buf,1);
     if(err)
     {
@@ -1190,14 +1190,14 @@ int mc_Script::SetBlockSignature(const unsigned char* sig,int sig_size,uint32_t 
         return err;
     }
     
-    mc_PutLE(buf,&hash_type,1);
+    mc_PutLE(buf,hash_type,1);
     err=SetData(buf,1);
     if(err)
     {
         return err;
     }
     
-    mc_PutLE(buf,&key_size,1);
+    mc_PutLE(buf,key_size,1);
     err=SetData(buf,1);
     if(err)
     {
@@ -1272,7 +1272,7 @@ int mc_Script::SetAssetGenesis(int64_t quantity)
     ptr[MC_DCT_SCRIPT_IDENTIFIER_LEN]=MC_DCT_SCRIPT_MULTICHAIN_ASSET_GENESIS_PREFIX;
     
     ptr+=MC_DCT_SCRIPT_IDENTIFIER_LEN+1;
-    mc_PutLE(ptr+ 0,&quantity,8);
+    mc_PutLE(ptr+ 0,quantity,8);
     
     return SetData(buf,MC_DCT_SCRIPT_IDENTIFIER_LEN+1+8);    
 }
@@ -1375,7 +1375,7 @@ int mc_Script::SetAssetDetails(const char*name,int multiple,const unsigned char*
         return err;
     }
     
-    mc_PutLE(buf,&multiple,4);
+    mc_PutLE(buf,multiple,4);
     err=SetData(buf,4);
     if(err)
     {
@@ -1532,8 +1532,8 @@ int mc_Script::SetApproval(uint32_t approval,uint32_t timestamp)
     ptr[MC_DCT_SCRIPT_IDENTIFIER_LEN]=MC_DCT_SCRIPT_MULTICHAIN_APPROVE_PREFIX;
     
     ptr+=MC_DCT_SCRIPT_IDENTIFIER_LEN+1;
-    mc_PutLE(ptr+0,&approval,1);
-    mc_PutLE(ptr+1,&timestamp,4);
+    mc_PutLE(ptr+0,approval,1);
+    mc_PutLE(ptr+1,timestamp,4);
     
     return SetData(buf,MC_DCT_SCRIPT_IDENTIFIER_LEN+1+5);    
 }
@@ -2184,7 +2184,7 @@ int mc_Script::SetCachedScript(int offset, int *next_offset, int vin, unsigned c
         return MC_ERR_NOERROR;            
     }
 
-    mc_PutLE(buf,&vin,4);
+    mc_PutLE(buf,vin,4);
     err=SetData(buf,4);
     if(err)
     {

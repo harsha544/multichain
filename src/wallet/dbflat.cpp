@@ -8,7 +8,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <boost/version.hpp>
-
+#include <compat/byteswap.h>
 
 using namespace std;
 using namespace boost;
@@ -52,7 +52,34 @@ void PrintDataStreamKey(const char *msg,const CDataStream& ss)
         printf("\n");
     }
 }
-
+uint32_t mc_read(int _fd, unsigned int * _buf, size_t _nbyte ) 
+{
+   uint32_t ret, tmp;
+   ret = read(_fd, &tmp, _nbyte);
+   unsigned char *ptr =(unsigned char*)&tmp;
+   unsigned char *ptrEnd = ptr+_nbyte;
+   int shift =  0; 
+   uint32_t result =0;
+   while(ptr<ptrEnd)
+    {
+        result|=((int32_t)(*ptr))<<shift;
+        shift+=8;
+        ptr++;
+    }
+   
+   *_buf = result;
+   
+   return ret;
+}
+uint32_t mc_write(int _fd, unsigned int _buf, size_t _nbyte )
+{  
+   uint32_t tmp = _buf;
+#if WORDS_BIGENDIAN == 1
+        tmp = bswap_32(_buf);
+#endif
+   uint32_t ret = write(_fd, &tmp, _nbyte); 
+   return ret;
+}
 void mc_DBFlatPos::Zero()
 {
     memset(this,0,sizeof(mc_DBFlatPos));
@@ -751,10 +778,10 @@ bool CDBFlat::Write(CDataStream& ssKey, CDataStream& ssValue, bool fOverwrite)
         }
     
         SetFileOffset(pos.m_Offset);
-        
+         
         write(m_FileHan,&pos.m_Flags,MC_DBF_FLAGS_FIELDSIZE);
-        write(m_FileHan,&pos.m_KeyLen,1);
-        write(m_FileHan,&pos.m_ValLen,1);
+        mc_write(m_FileHan,pos.m_KeyLen,1);
+        mc_write(m_FileHan,pos.m_ValLen,1);
         write(m_FileHan,&ssKey[0],pos.m_KeyLen);
         write(m_FileHan,&ssValue[0],pos.m_ValLen);
         if(GetFileSize() < pos.NextOffset())
@@ -790,8 +817,8 @@ bool CDBFlat::Write(CDataStream& ssKey, CDataStream& ssValue, bool fOverwrite)
     pos.m_Offset=m_FileSize;
     SetFileOffset(pos.m_Offset);
     write(m_FileHan,&pos.m_Flags,MC_DBF_FLAGS_FIELDSIZE);
-    write(m_FileHan,&pos.m_KeyLen,key_size_bytes);
-    write(m_FileHan,&pos.m_ValLen,val_size_bytes);
+    mc_write(m_FileHan,pos.m_KeyLen,key_size_bytes);
+    mc_write(m_FileHan,pos.m_ValLen, val_size_bytes);
     if(pos.m_KeyLen)write(m_FileHan,&ssKey[0],pos.m_KeyLen);
     if(pos.m_ValLen)write(m_FileHan,&ssValue[0],pos.m_ValLen);
     
@@ -969,11 +996,11 @@ int CDBFlat::ReadAtCursor(void* pcursor, CDataStream& ssKey, CDataStream& ssValu
             }            
             lpPos->m_KeyLen=0;
             lpPos->m_ValLen=0;
-            if(read(m_FileHan,&(lpPos->m_KeyLen),key_size_bytes) != key_size_bytes)
+            if(mc_read(m_FileHan,&(lpPos->m_KeyLen),key_size_bytes) != key_size_bytes)
             {
                 return MC_DBW_CODE_DB_NOSERVER;  
             }
-            if(read(m_FileHan,&(lpPos->m_ValLen),val_size_bytes) != val_size_bytes)
+            if(mc_read(m_FileHan,&(lpPos->m_ValLen),val_size_bytes) != val_size_bytes)
             {
                 return MC_DBW_CODE_DB_NOSERVER;  
             }            

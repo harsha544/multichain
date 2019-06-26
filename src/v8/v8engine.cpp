@@ -8,8 +8,8 @@
 #include "v8/v8utils.h"
 #include <libplatform/libplatform.h>
 
-extern char _binary_icudtl_dat_start;
-extern char _binary_icudtl_dat_end;
+extern char _binary_icudtb_dat_start;
+extern char _binary_icudtb_dat_end;
 extern char _binary_natives_blob_bin_start;
 extern char _binary_natives_blob_bin_end;
 extern char _binary_snapshot_blob_bin_start;
@@ -78,17 +78,17 @@ void V8Engine::InitializeV8()
     fs::path v8TempDir = tempDir / "v8";
     fs::create_directories(v8TempDir);
 
-    fs::path icudtl_blob = v8TempDir / "icudtl.dat";
+    fs::path icudtb_blob = v8TempDir / "icudtb.dat";
     fs::path natives_blob = v8TempDir / "natives_blob.bin";
     fs::path snapshot_blob = v8TempDir / "snapshot_blob.bin";
 
-    WriteBinaryFile(icudtl_blob, &_binary_icudtl_dat_start, &_binary_icudtl_dat_end - &_binary_icudtl_dat_start);
+    WriteBinaryFile(icudtb_blob, &_binary_icudtb_dat_start, &_binary_icudtb_dat_end - &_binary_icudtb_dat_start);
     WriteBinaryFile(natives_blob, &_binary_natives_blob_bin_start,
                     &_binary_natives_blob_bin_end - &_binary_natives_blob_bin_start);
     WriteBinaryFile(snapshot_blob, &_binary_snapshot_blob_bin_start,
                     &_binary_snapshot_blob_bin_end - &_binary_snapshot_blob_bin_start);
 
-    v8::V8::InitializeICUDefaultLocation(icudtl_blob.string().c_str());
+    v8::V8::InitializeICUDefaultLocation(icudtb_blob.string().c_str());
     v8::V8::InitializeExternalStartupData(natives_blob.string().c_str());
 
     fs::remove_all(tempDir);

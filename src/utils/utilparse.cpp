@@ -633,7 +633,7 @@ bool ParseMultichainTxOutToBuffer(uint256 hash,                                 
                     memset(buf,0,MC_AST_ASSET_FULLREF_BUF_SIZE);
                     type=MC_PTP_ISSUE | MC_PTP_SEND;
                     quantity=1;
-                    mc_PutLE(buf+4,&type,4);
+                    mc_PutLE(buf+4,type,4);
                     mc_SetABRefType(buf,MC_AST_ASSET_REF_TYPE_SPECIAL);
                     mc_SetABQuantity(buf,quantity);
                     if(amounts->Seek(buf) < 0)
@@ -648,7 +648,7 @@ bool ParseMultichainTxOutToBuffer(uint256 hash,                                 
                     memset(buf,0,MC_AST_ASSET_FULLREF_BUF_SIZE);
                     type=MC_PTP_CREATE | MC_PTP_SEND;
                     quantity=1;
-                    mc_PutLE(buf+4,&type,4);
+                    mc_PutLE(buf+4,type,4);
                     mc_SetABRefType(buf,MC_AST_ASSET_REF_TYPE_SPECIAL);
                     mc_SetABQuantity(buf,quantity);
                     if(amounts->Seek(buf) < 0)
@@ -663,7 +663,7 @@ bool ParseMultichainTxOutToBuffer(uint256 hash,                                 
                     memset(buf,0,MC_AST_ASSET_FULLREF_BUF_SIZE);
                     type=MC_PTP_ADMIN | MC_PTP_SEND;
                     quantity=1;
-                    mc_PutLE(buf+4,&type,4);
+                    mc_PutLE(buf+4,type,4);
                     mc_SetABRefType(buf,MC_AST_ASSET_REF_TYPE_SPECIAL);
                     mc_SetABQuantity(buf,quantity);
                     if(amounts->Seek(buf) < 0)
@@ -678,7 +678,7 @@ bool ParseMultichainTxOutToBuffer(uint256 hash,                                 
                     memset(buf,0,MC_AST_ASSET_FULLREF_BUF_SIZE);
                     type=MC_PTP_ACTIVATE | MC_PTP_SEND;
                     quantity=1;
-                    mc_PutLE(buf+4,&type,4);
+                    mc_PutLE(buf+4,type,4);
                     mc_SetABRefType(buf,MC_AST_ASSET_REF_TYPE_SPECIAL);
                     mc_SetABQuantity(buf,quantity);
                     if(amounts->Seek(buf) < 0)
@@ -704,7 +704,7 @@ bool ParseMultichainTxOutToBuffer(uint256 hash,                                 
 */
             memset(buf,0,MC_AST_ASSET_FULLREF_BUF_SIZE);
             type=MC_PTP_SEND;
-            mc_PutLE(buf+4,&type,4);
+            mc_PutLE(buf+4,type,4);
             mc_SetABRefType(buf,MC_AST_ASSET_REF_TYPE_SPECIAL);
             quantity=txout.nValue;
             row=amounts->Seek(buf);
@@ -740,7 +740,7 @@ bool ParseMultichainTxOutToBuffer(uint256 hash,                                 
             }
             memset(buf,0,MC_AST_ASSET_FULLREF_BUF_SIZE);
             type=MC_PTP_SEND;
-            mc_PutLE(buf+4,&type,4);
+            mc_PutLE(buf+4,type,4);
             mc_SetABRefType(buf,MC_AST_ASSET_REF_TYPE_SPECIAL);
             quantity=txout.nValue;
             row=amounts->Seek(buf);

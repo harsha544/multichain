@@ -10,9 +10,30 @@
 #include "utils/tinyformat.h"
 #include "utils/utilstrencodings.h"
 
-uint256 CBlockHeader::GetHash() const
+uint256 CBlockHeader::GetHash() const 
 {
-    return Hash(BEGIN(nVersion), END(nNonce));
+
+// byte swap the 4 int/unsigned int values
+ #if WORDS_BIGENDIAN == 1
+        CBlockHeader BE; 
+        uint32_t src_tmp;
+        src_tmp= bswap_32(nVersion);
+        BE.nVersion = src_tmp;
+        src_tmp = bswap_32(nTime);
+        BE.nTime = src_tmp;
+        src_tmp = bswap_32(nBits);
+        BE.nBits = src_tmp;
+        src_tmp = bswap_32(nNonce);
+        BE.nNonce = src_tmp;
+        BE.hashPrevBlock=hashPrevBlock;
+        BE.hashPrevBlock.ByteSwap();
+        BE.hashMerkleRoot=hashMerkleRoot;
+        BE.hashMerkleRoot.ByteSwap();
+	return Hash(BEGIN(BE.nVersion), END(BE.nNonce)).ByteSwap(); 
+#endif
+
+
+	return Hash(BEGIN(nVersion), END(nNonce));
 }
 
 uint256 CBlock::BuildMerkleTree(bool* fMutated) const

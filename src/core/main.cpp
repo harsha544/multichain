@@ -5670,6 +5670,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 /* MCHN END */
 
 //    RandAddSeedPerfmon();
+  LogPrintf("++++ start ProcessMessage\n");
     if(fDebug)LogPrint("net", "received: %s (%u bytes) peer=%d\n", SanitizeString(strCommand), vRecv.size(), pfrom->id);
     if (mapArgs.count("-dropmessagestest") && (atoi(mapArgs["-dropmessagestest"]) > 0) && (GetRand(atoi(mapArgs["-dropmessagestest"])) == 0) )
     {
@@ -5744,6 +5745,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         // Change version
 /* MCHN START */
+  LogPrintf("++++ start shakehand\n");
         pfrom->nVersionNonceReceived=nNonce; 
         pfrom->fVerackackReceived=false;
         if(mc_gState->m_NetworkParams->IsProtocolMultichain())
@@ -6797,7 +6799,6 @@ bool ProcessMessages(CNode* pfrom)
 {
     //if (fDebug)
     //    LogPrintf("ProcessMessages(%u messages)\n", pfrom->vRecvMsg.size());
-
     //
     // Message format
     //  (4) message start
@@ -6806,6 +6807,7 @@ bool ProcessMessages(CNode* pfrom)
     //  (4) checksum
     //  (x) data
     //
+                    LogPrintf("+++++ 0 start ProcessMessages\n");            
     bool fOk = true;
 
     if (!pfrom->vRecvGetData.empty())
