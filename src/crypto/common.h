@@ -4,12 +4,14 @@
 
 #ifndef BITCOIN_CRYPTO_COMMON_H
 #define BITCOIN_CRYPTO_COMMON_H
+#include<stdio.h>
 
 #if defined(HAVE_CONFIG_H)
 #include "bitcoin-config.h"
 #endif
 
 #include <stdint.h>
+#include <compat/byteswap.h>
 
 #if defined(HAVE_ENDIAN_H)
 #include <endian.h>
@@ -117,4 +119,28 @@ void static inline WriteBE64(unsigned char* ptr, uint64_t x)
 #endif
 }
 
+uint32_t static inline ByteSwapLE32( uint32_t x)
+{
+#if WORDS_BIGENDIAN == 1
+   return  bswap_32(x);
+#endif
+   return x;
+}
+uint64_t static inline ByteSwapLE64( uint64_t x)
+{
+#if WORDS_BIGENDIAN == 1
+   return  bswap_64(x);
+#endif
+   return x;
+}
+void static printout(char * name,  char * aa, int leng) {
+
+printf("+++ %s=0x", name);
+for (int i = 0; i < leng; i++)
+{
+  printf("%02X", (uint8_t) *aa);
+  aa=aa+1;
+}
+  printf("\n");
+}
 #endif // BITCOIN_CRYPTO_COMMON_H

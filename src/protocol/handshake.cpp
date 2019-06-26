@@ -13,6 +13,7 @@
 #include "keys/key.h"
 #include "structs/base58.h"
 #include "net/net.h"
+#include "crypto/common.h"
 
 using namespace std;
 
@@ -278,6 +279,7 @@ bool ProcessMultichainVerack(CNode* pfrom, CDataStream& vRecv,bool fIsVerackack,
         }
         
         CHashWriter ss(SER_GETHASH, 0);
+	nNonce =ByteSwapLE64(nNonce);
         ss << vector<unsigned char>((unsigned char*)sParameterSetHash.c_str(), (unsigned char*)sParameterSetHash.c_str()+32);
         ss << vector<unsigned char>((unsigned char*)&nNonce, (unsigned char*)&nNonce+sizeof(nNonce));
         uint256 signed_hash=ss.GetHash();
@@ -388,7 +390,6 @@ bool PushMultiChainVerack(CNode* pfrom, bool fIsVerackack)
     vector<unsigned char>vSigScript;
     uint64_t nNonce;
     
- LogPrintf("+++ mchn: start PushMultiChainVerack %s\n", pfrom->addr.ToString());
     if(!fIsVerackack)
     {
         if(mc_gState->m_NetworkParams->m_Status != MC_PRM_STATUS_VALID)         // Ignoring version message from seed node in initial handshake
@@ -403,7 +404,6 @@ bool PushMultiChainVerack(CNode* pfrom, bool fIsVerackack)
             pfrom->fVerackackReceived)
         {
             vParameterSet=vector<unsigned char>(mc_gState->m_NetworkParams->m_lpData,mc_gState->m_NetworkParams->m_lpData+mc_gState->m_NetworkParams->m_Size);        
-            LogPrintf("mchn: Sending full parameter set to %s\n", pfrom->addr.ToString());
         }
         else
         {
@@ -450,7 +450,8 @@ bool PushMultiChainVerack(CNode* pfrom, bool fIsVerackack)
     uint256 hash_to_send=ssHash.GetHash();
         
     vParameterSetHash=vector<unsigned char>((unsigned char*)&hash_to_send, (unsigned char*)&hash_to_send+32);
-    
+    nNonce =ByteSwapLE64(nNonce);
+ 
     CHashWriter ssSig(SER_GETHASH, 0);
     ssSig << vParameterSetHash;
     ssSig << vector<unsigned char>((unsigned char*)&nNonce, (unsigned char*)&nNonce+sizeof(nNonce));

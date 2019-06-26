@@ -15,6 +15,7 @@
 #include "version/clientversion.h"
 #include "primitives/transaction.h"
 #include "ui/ui_interface.h"
+#include "crypto/common.h"
 
 #include "structs/base58.h"
 #include "keys/key.h"
@@ -1340,8 +1341,6 @@ void ThreadOpenConnections()
 
 /* MCHN END */    
     
- int aa=1;
-        LogPrintf("+++++++++++ net  count:%d, network_status:%s\n", aa++, mc_gState->m_NetworkState);
     // Initiate network connections
     int64_t nStart = GetTime();
     while (true)
@@ -1370,7 +1369,6 @@ void ThreadOpenConnections()
         //
         CAddress addrConnect;
 
-        LogPrintf("+++++++++++ net  count:%d, network_status:%s\n", aa++, mc_gState->m_NetworkState);
         
         // Only connect out to one peer per network group (/16 for IPv4).
         // Do this here so we don't have to critsect vNodes inside mapAddresses critsect.
@@ -1669,7 +1667,6 @@ bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOu
 
 void ThreadMessageHandler()
 {
-        LogPrintf("++++++++++ ThreadMessageHandler\n");
     SetThreadPriority(THREAD_PRIORITY_BELOW_NORMAL);
     while (true)
     {
@@ -1682,7 +1679,6 @@ void ThreadMessageHandler()
             }
         }
 
-        LogPrintf("++++++++++ Poll the connected nodes for messages \n");
         // Poll the connected nodes for messages
         CNode* pnodeTrickle = NULL;
         if (!vNodesCopy.empty())
@@ -1695,7 +1691,6 @@ void ThreadMessageHandler()
             if (pnode->fDisconnect)
                 continue;
 
-        LogPrintf("++++++++++ Receive messagess \n");
 
             // Receive messages
             {
@@ -2375,14 +2370,15 @@ void CNode::EndMessage() UNLOCK_FUNCTION(cs_vSend)
 
     // Set the size
     unsigned int nSize = ssSend.size() - CMessageHeader::HEADER_SIZE;
-    memcpy((char*)&ssSend[CMessageHeader::MESSAGE_SIZE_OFFSET], &nSize, sizeof(nSize));
+    mc_PutLE((char*)&ssSend[CMessageHeader::MESSAGE_SIZE_OFFSET],nSize,sizeof(nSize));;
 
     // Set the checksum
     uint256 hash = Hash(ssSend.begin() + CMessageHeader::HEADER_SIZE, ssSend.end());
     unsigned int nChecksum = 0;
     memcpy(&nChecksum, &hash, sizeof(nChecksum));
+    nChecksum = ByteSwapLE32(nChecksum);
     assert(ssSend.size () >= CMessageHeader::CHECKSUM_OFFSET + sizeof(nChecksum));
-    memcpy((char*)&ssSend[CMessageHeader::CHECKSUM_OFFSET], &nChecksum, sizeof(nChecksum));
+    mc_PutLE((char*)&ssSend[CMessageHeader::CHECKSUM_OFFSET], nChecksum ,sizeof(nChecksum));
 
     if(fDebug)LogPrint("net", "(%d bytes) peer=%d\n", nSize, id);
 
