@@ -1317,6 +1317,7 @@ bool AppInit2(boost::thread_group& threadGroup,int OutputPipe)
             }            
 */
             
+    LogPrintf("++++++++ network_status=%s\n", mc_gState->m_NetworkState);        
             if(mc_QuerySeed(seedThreadGroup,seed_node))
             {
                 if((mc_gState->m_NetworkState == MC_NTS_SEED_READY) || (mc_gState->m_NetworkState == MC_NTS_SEED_NO_PARAMS) )

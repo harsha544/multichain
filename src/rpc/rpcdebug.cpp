@@ -147,7 +147,7 @@ int64_t mcd_AddRows(mc_Database *m_DB,int key_size,int value_size,int row_count,
         memset(kbuf,0,key_size);
         memset(vbuf,0,value_size);
         total_rows+=per_commit_count;
-        mc_PutLE(vbuf,&total_rows,8);
+        mc_PutLE(vbuf,total_rows,8);
         err=m_DB->Write(kbuf,key_size,vbuf,value_size,MC_OPT_DB_DATABASE_TRANSACTIONAL);
         if(err)
         {

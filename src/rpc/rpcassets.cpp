@@ -218,6 +218,9 @@ Value issuefromcmd(const Array& params, bool fHelp)
     {
         lpDetails->SetSpecialParamValue(MC_ENT_SPRM_NAME,(const unsigned char*)(asset_name.c_str()),asset_name.size());//+1);
     }        
+ #if WORDS_BIGENDIAN == 1
+	multiple = bswap_32(multiple);  // convert to LE format
+ #endif
     lpDetails->SetSpecialParamValue(MC_ENT_SPRM_ASSET_MULTIPLE,(unsigned char*)&multiple,4);
     
     if(is_open)
@@ -823,17 +826,17 @@ Value getmultibalances(const Array& params, bool fHelp)
             if(quantity > 0)
             {
                 quantity+=mc_GetLE(addresstxid_amounts->GetRow(0)+80,MC_AST_ASSET_QUANTITY_SIZE);
-                mc_PutLE(addresstxid_amounts->GetRow(0)+80,&quantity,MC_AST_ASSET_QUANTITY_SIZE);
+                mc_PutLE(addresstxid_amounts->GetRow(0)+80,quantity,MC_AST_ASSET_QUANTITY_SIZE);
                 row=addresstxid_amounts->Seek(buf);
                 quantity=txout.nValue;
                 if(row >= 0)
                 {
                     quantity+=mc_GetLE(addresstxid_amounts->GetRow(row)+80,MC_AST_ASSET_QUANTITY_SIZE);
-                    mc_PutLE(addresstxid_amounts->GetRow(row)+80,&quantity,MC_AST_ASSET_QUANTITY_SIZE);
+                    mc_PutLE(addresstxid_amounts->GetRow(row)+80,quantity,MC_AST_ASSET_QUANTITY_SIZE);
                 }
                 else
                 {                             
-                    mc_PutLE(buf+80,&quantity,MC_AST_ASSET_QUANTITY_SIZE);
+                    mc_PutLE(buf+80,quantity,MC_AST_ASSET_QUANTITY_SIZE);
                     addresstxid_amounts->Add(buf,buf+80);                        
                 }                
             }
@@ -880,11 +883,11 @@ Value getmultibalances(const Array& params, bool fHelp)
                         if(row >= 0)
                         {
                             quantity+=mc_GetLE(addresstxid_amounts->GetRow(row)+80,MC_AST_ASSET_QUANTITY_SIZE);
-                            mc_PutLE(addresstxid_amounts->GetRow(row)+80,&quantity,MC_AST_ASSET_QUANTITY_SIZE);
+                            mc_PutLE(addresstxid_amounts->GetRow(row)+80,quantity,MC_AST_ASSET_QUANTITY_SIZE);
                         }
                         else
                         {                             
-                            mc_PutLE(totbuf+80,&quantity,MC_AST_ASSET_QUANTITY_SIZE);
+                            mc_PutLE(totbuf+80,quantity,MC_AST_ASSET_QUANTITY_SIZE);
                             addresstxid_amounts->Add(totbuf,totbuf+80);                        
                         }                
                         
@@ -894,11 +897,11 @@ Value getmultibalances(const Array& params, bool fHelp)
                         if(row >= 0)
                         {
                             quantity+=mc_GetLE(addresstxid_amounts->GetRow(row)+80,MC_AST_ASSET_QUANTITY_SIZE);
-                            mc_PutLE(addresstxid_amounts->GetRow(row)+80,&quantity,MC_AST_ASSET_QUANTITY_SIZE);
+                            mc_PutLE(addresstxid_amounts->GetRow(row)+80,quantity,MC_AST_ASSET_QUANTITY_SIZE);
                         }
                         else
                         {                             
-                            mc_PutLE(buf+80,&quantity,MC_AST_ASSET_QUANTITY_SIZE);
+                            mc_PutLE(buf+80,quantity,MC_AST_ASSET_QUANTITY_SIZE);
                             addresstxid_amounts->Add(buf,buf+80);                        
                         }                
                     }
@@ -1195,7 +1198,7 @@ Value getaddressbalances(const Array& params, bool fHelp)
                         {
                             int64_t last=mc_GetLE(genesis_amounts->GetRow(row)+32,MC_AST_ASSET_QUANTITY_SIZE);
                             quantity+=last;
-                            mc_PutLE(genesis_amounts->GetRow(row)+32,&quantity,MC_AST_ASSET_QUANTITY_SIZE);
+                            mc_PutLE(genesis_amounts->GetRow(row)+32,quantity,MC_AST_ASSET_QUANTITY_SIZE);
                         }
                         else
                         {
@@ -1289,11 +1292,11 @@ Value getassetbalances(const Array& params, bool fHelp)
             {
                 const CBitcoinAddress& address = item.first;
                 const string& strName = item.second.name;
-                    if (strName == params[0].get_str())
-                    {
-                       setAddress.insert(address);                    
-                    }
+                if (strName == params[0].get_str())
+                {
+                   setAddress.insert(address);                    
                 }
+            }            
             check_account=true;
         }
     }
@@ -1411,7 +1414,7 @@ Value getassetbalances(const Array& params, bool fHelp)
                         {
                             int64_t last=mc_GetLE(genesis_amounts->GetRow(row)+32,MC_AST_ASSET_QUANTITY_SIZE);
                             quantity+=last;
-                            mc_PutLE(genesis_amounts->GetRow(row)+32,&quantity,MC_AST_ASSET_QUANTITY_SIZE);
+                            mc_PutLE(genesis_amounts->GetRow(row)+32,quantity,MC_AST_ASSET_QUANTITY_SIZE);
                         }
                         else
                         {

@@ -2734,7 +2734,7 @@ int CWallet::SelectMultiChainCombineCoinsMinConf(int nConfMine, int nConfTheirs,
             out_i=output.i;
             
             memcpy(buf_map,&hash,32);
-            mc_PutLE(buf_map+32,&out_i,4);
+            mc_PutLE(buf_map+32,out_i,4);
             int row=in_map->Seek(buf_map);
             if(row >= 0)
             {
@@ -2883,7 +2883,7 @@ bool CWallet::SelectMultiChainCoinsMinConf(const CAmount& nTargetValue, int nCon
             out_i=output.i;
             
             memcpy(buf_map,&hash,32);
-            mc_PutLE(buf_map+32,&out_i,4);
+            mc_PutLE(buf_map+32,out_i,4);
             int row=in_map->Seek(buf_map);
             if(row >= 0)
             {
@@ -3058,7 +3058,7 @@ bool CWallet::SelectMultiChainCoins(const CAmount& nTargetValue, vector<COutput>
                 out_i=out.i;
 
                 memcpy(buf_map,&hash,32);                                       // Retrieving coin index in the matrix
-                mc_PutLE(buf_map+32,&out_i,4);
+                mc_PutLE(buf_map+32,out_i,4);
                 int row=in_map->Seek(buf_map);
                 
                 if(row >= 0)

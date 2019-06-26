@@ -284,6 +284,7 @@ public:
     {
         s.read((char*)pn, sizeof(pn));
     }
+    base_uint& ByteSwap();
 };
 
 /** 96-bit unsigned big integer. */
@@ -312,7 +313,7 @@ public:
     uint256(uint64_t b) : base_uint<256>(b) {}
     explicit uint256(const std::string& str) : base_uint<256>(str) {}
     explicit uint256(const std::vector<unsigned char>& vch) : base_uint<256>(vch) {}
-    
+
     /**
      * The "compact" format is a representation of a whole
      * number N using an unsigned 32bit number similar to a

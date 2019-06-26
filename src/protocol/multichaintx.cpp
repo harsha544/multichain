@@ -2241,7 +2241,7 @@ bool MultiChainTransaction_ProcessAssetIssuance(const CTransaction& tx,         
                 if(stored_issuers.count(issuers[i]) == 0)
                 {
                     memcpy(issuer_buf,issuers[i].begin(),sizeof(uint160));
-                    mc_PutLE(issuer_buf+sizeof(uint160),&issuer_flags[i],4);
+                    mc_PutLE(issuer_buf+sizeof(uint160),issuer_flags[i],4);
                     if((int)i < mc_gState->m_Assets->MaxStoredIssuers())            // Adding list of issuers to the asset script
                     {
                         mc_gState->m_TmpScript->SetSpecialParamValue(MC_ENT_SPRM_ISSUER,issuer_buf,sizeof(issuer_buf));            
@@ -2454,7 +2454,7 @@ bool MultiChainTransaction_ProcessEntityCreation(const CTransaction& tx,        
             if(stored_openers.count(openers[i]) == 0)
             {
                 memcpy(opener_buf,openers[i].begin(),sizeof(uint160));
-                mc_PutLE(opener_buf+sizeof(uint160),&opener_flags[i],4);
+                mc_PutLE(opener_buf+sizeof(uint160),opener_flags[i],4);
                 if((int)i < mc_gState->m_Assets->MaxStoredIssuers())
                 {
                     mc_gState->m_TmpScript->SetSpecialParamValue(MC_ENT_SPRM_ISSUER,opener_buf,sizeof(opener_buf));            

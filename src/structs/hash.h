@@ -12,6 +12,7 @@
 #include "utils/serialize.h"
 #include "structs/uint256.h"
 #include "version/bcversion.h"
+#include <compat/byteswap.h>
 
 #include <vector>
 
@@ -157,7 +158,7 @@ uint256 SerializeHash(const T& obj, int nType=SER_GETHASH, int nVersion=PROTOCOL
 {
     CHashWriter ss(nType, nVersion);
     ss << obj;
-    return ss.GetHash();
+    return ss.GetHash().ByteSwap();
 }
 
 unsigned int MurmurHash3(unsigned int nHashSeed, const std::vector<unsigned char>& vDataToHash);

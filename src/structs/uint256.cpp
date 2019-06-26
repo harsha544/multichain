@@ -7,6 +7,8 @@
 #include "structs/uint256.h"
 
 #include "utils/utilstrencodings.h"
+#include "multichain/multichain.h"
+#include <compat/byteswap.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -15,6 +17,14 @@ template <unsigned int BITS>
 base_uint<BITS>::base_uint(const std::string& str)
 {
     SetHex(str);
+
+#if WORDS_BIGENDIAN == 1
+    int i;
+    for ( i = 0; i < WIDTH; i++) {
+        pn[i] = bswap_32(pn[i]);
+    } 
+#endif
+
 }
 
 template <unsigned int BITS>
@@ -154,9 +164,20 @@ double base_uint<BITS>::getdouble() const
 template <unsigned int BITS>
 std::string base_uint<BITS>::GetHex() const
 {
+#if WORDS_BIGENDIAN == 1
+    uint32_t tmp[WIDTH]; 
+    for (int i = 0; i < WIDTH; i++)
+         tmp[i] = bswap_32(pn[i]) ;
+#endif
+
     char psz[sizeof(pn) * 2 + 1];
-    for (unsigned int i = 0; i < sizeof(pn); i++)
+    for (unsigned int i = 0; i < sizeof(pn); i++) {
+#if WORDS_BIGENDIAN == 1
+        sprintf(psz + i * 2, "%02x", ((unsigned char*)tmp)[sizeof(pn) - i - 1]);
+#else
         sprintf(psz + i * 2, "%02x", ((unsigned char*)pn)[sizeof(pn) - i - 1]);
+#endif
+    }
     return std::string(psz, psz + sizeof(pn) * 2);
 }
 
@@ -215,6 +236,19 @@ unsigned int base_uint<BITS>::bits() const
     }
     return 0;
 }
+template <unsigned int BITS>
+base_uint<BITS>&  base_uint<BITS>::ByteSwap()
+{
+#if WORDS_BIGENDIAN == 1
+    int i;
+    for ( i = 0; i < WIDTH; i++) {
+        uint32_t src_tmp;
+        src_tmp = bswap_32(pn[i]);
+        pn[i] = src_tmp;
+    }
+#endif
+    return *this;
+}
 
 // Explicit instantiations for base_uint<96>
 template int base_uint<96>::CompareTo(const base_uint<96>&) const;
@@ -232,6 +266,7 @@ template base_uint<160>& base_uint<160>::operator>>=(unsigned int);
 template base_uint<160>& base_uint<160>::operator*=(uint32_t b32);
 template base_uint<160>& base_uint<160>::operator*=(const base_uint<160>& b);
 template base_uint<160>& base_uint<160>::operator/=(const base_uint<160>& b);
+template base_uint<160>& base_uint<160>::ByteSwap(); 
 template int base_uint<160>::CompareTo(const base_uint<160>&) const;
 template bool base_uint<160>::EqualTo(uint64_t) const;
 template double base_uint<160>::getdouble() const;
@@ -249,6 +284,7 @@ template base_uint<256>& base_uint<256>::operator>>=(unsigned int);
 template base_uint<256>& base_uint<256>::operator*=(uint32_t b32);
 template base_uint<256>& base_uint<256>::operator*=(const base_uint<256>& b);
 template base_uint<256>& base_uint<256>::operator/=(const base_uint<256>& b);
+template base_uint<256>& base_uint<256>::ByteSwap(); 
 template int base_uint<256>::CompareTo(const base_uint<256>&) const;
 template bool base_uint<256>::EqualTo(uint64_t) const;
 template double base_uint<256>::getdouble() const;
@@ -347,6 +383,7 @@ static void inline HashFinal(uint32_t& a, uint32_t& b, uint32_t& c)
 
 uint64_t uint256::GetHash(const uint256& salt) const
 {
+
     uint32_t a, b, c;
     a = b = c = 0xdeadbeef + (WIDTH << 2);
 

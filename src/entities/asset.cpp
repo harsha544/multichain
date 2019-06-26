@@ -2,6 +2,7 @@
 // MultiChain code distributed under the GPLv3 license, see COPYING file.
 
 #include "multichain/multichain.h"
+#include <compat/byteswap.h>
 
 #define MC_AST_ASSET_REF_TYPE_OFFSET        32
 #define MC_AST_ASSET_REF_TYPE_SIZE           4
@@ -589,8 +590,8 @@ void mc_EntityDetails::Set(mc_EntityLedgerRow* row)
     
     if(offset)
     {
-        mc_PutLE(m_Ref,&block,4);
-        mc_PutLE(m_Ref+4,&offset,4);
+        mc_PutLE(m_Ref,block,4);
+        mc_PutLE(m_Ref+4,offset,4);
         for(i=0;i<MC_ENT_REF_PREFIX_SIZE;i++)
         {
             m_Ref[8+i]=*(row->m_Key+MC_ENT_KEY_SIZE-1-i);
@@ -615,7 +616,7 @@ void mc_EntityDetails::Set(mc_EntityLedgerRow* row)
             m_Permissions |= MC_PTP_ADMIN | MC_PTP_ACTIVATE | MC_PTP_WRITE;
             if(mc_gState->m_Features->ReadPermissions())
             {
-                m_Permissions |= MC_PTP_READ;                
+                m_Permissions |= MC_PTP_READ;
             }
             break;
         default:
@@ -624,7 +625,7 @@ void mc_EntityDetails::Set(mc_EntityLedgerRow* row)
                 m_Permissions = MC_PTP_WRITE | MC_PTP_ACTIVATE;
                 if(mc_gState->m_Features->ReadPermissions())
                 {
-                    m_Permissions |= MC_PTP_READ;                
+                    m_Permissions |= MC_PTP_READ;
                 }
             }
             break;            
@@ -651,7 +652,7 @@ void mc_EntityDetails::Set(mc_EntityLedgerRow* row)
             }
         }
         if(value_offset < m_LedgerRow.m_ScriptSize)
-        {            
+        {
             if(value_size > MC_ENT_MAX_NAME_SIZE)
             {
                 value_size=MC_ENT_MAX_NAME_SIZE;
@@ -660,16 +661,16 @@ void mc_EntityDetails::Set(mc_EntityLedgerRow* row)
             }
             else
             {
-                memcpy(m_Name,m_LedgerRow.m_Script+value_offset,value_size);                
+                memcpy(m_Name,m_LedgerRow.m_Script+value_offset,value_size);
             }
             mc_StringLowerCase(m_Name,value_size);
             m_Flags |= MC_ENT_FLAG_NAME_IS_SET;
         }
-        
+
         value_offset=mc_FindSpecialParamInDetailsScript(m_LedgerRow.m_Script,m_LedgerRow.m_ScriptSize,MC_ENT_SPRM_PERMISSIONS,&value_size);
         if(value_offset <= m_LedgerRow.m_ScriptSize)
         {
-            if( (value_offset != m_LedgerRow.m_ScriptSize) || (mc_gState->m_Features->FixedLegacyPermissionRestrictionFlag() == 0)) 
+            if( (value_offset != m_LedgerRow.m_ScriptSize) || (mc_gState->m_Features->FixedLegacyPermissionRestrictionFlag() == 0))
             {
                 m_Permissions |= MC_PTP_SPECIFIED;
                 if((value_size>0) && (value_size<=4))
@@ -679,7 +680,7 @@ void mc_EntityDetails::Set(mc_EntityLedgerRow* row)
                 }
             }
         }
-                            
+
         value_offset=mc_FindSpecialParamInDetailsScript(m_LedgerRow.m_Script,m_LedgerRow.m_ScriptSize,MC_ENT_SPRM_RESTRICTIONS,&value_size);
         if(value_offset <= m_LedgerRow.m_ScriptSize)
         {
@@ -691,7 +692,6 @@ void mc_EntityDetails::Set(mc_EntityLedgerRow* row)
                 }
             }
         }
-        
     }
     
     mc_ZeroABRaw(m_FullRef);
@@ -937,6 +937,9 @@ int mc_AssetDB::InsertAsset(const void* txid, int offset, int asset_type, uint64
 
     if(add_param)
     {
+	#if WORDS_BIGENDIAN == 1
+		multiple = bswap_32(multiple);  // convert to LE format
+	#endif
         lpDetails->SetSpecialParamValue(MC_ENT_SPRM_ASSET_MULTIPLE,(unsigned char*)&multiple,sizeof(multiple));
     }
     
@@ -1825,12 +1828,10 @@ const unsigned char* mc_EntityDetails::GetScript()
 {
     return m_LedgerRow.m_Script;
 }
-
 uint32_t mc_EntityDetails::GetScriptSize()
 {
     return m_LedgerRow.m_ScriptSize;
 }
-
 int mc_EntityDetails::GetAssetMultiple()
 {
     int multiple;
@@ -1940,7 +1941,6 @@ int mc_EntityDetails::AnyoneCanWrite()
     }
     return 0;
 }
-
 int mc_EntityDetails::AnyoneCanRead()
 {
     if(m_LedgerRow.m_EntityType != MC_ENT_TYPE_STREAM)
@@ -1957,7 +1957,7 @@ int mc_EntityDetails::AnyoneCanRead()
             }
         }
     }
-    
+
     return 1;
 }
 
@@ -2398,7 +2398,7 @@ uint32_t mc_GetABScriptType(void *ptr)
 
 void mc_SetABScriptType(void *ptr,uint32_t type)
 {
-    mc_PutLE((unsigned char*)ptr+MC_AST_ASSET_SCRIPT_TYPE_OFFSET,&type,MC_AST_ASSET_SCRIPT_TYPE_SIZE);
+    mc_PutLE((unsigned char*)ptr+MC_AST_ASSET_SCRIPT_TYPE_OFFSET,type,MC_AST_ASSET_SCRIPT_TYPE_SIZE);
 }
 
 uint32_t mc_GetABRefType(void *ptr)
@@ -2408,7 +2408,7 @@ uint32_t mc_GetABRefType(void *ptr)
 
 void mc_SetABRefType(void *ptr,uint32_t type)
 {
-    mc_PutLE((unsigned char*)ptr+MC_AST_ASSET_REF_TYPE_OFFSET,&type,MC_AST_ASSET_REF_TYPE_SIZE);    
+    mc_PutLE((unsigned char*)ptr+MC_AST_ASSET_REF_TYPE_OFFSET,type,MC_AST_ASSET_REF_TYPE_SIZE);
 }
 
 int64_t mc_GetABQuantity(void *ptr)
@@ -2418,7 +2418,7 @@ int64_t mc_GetABQuantity(void *ptr)
 
 void mc_SetABQuantity(void *ptr,int64_t quantity)
 {
-    mc_PutLE((unsigned char*)ptr+MC_AST_ASSET_QUANTITY_OFFSET,&quantity,MC_AST_ASSET_QUANTITY_SIZE);        
+    mc_PutLE((unsigned char*)ptr+MC_AST_ASSET_QUANTITY_OFFSET,quantity,MC_AST_ASSET_QUANTITY_SIZE);
 }
 
 unsigned char* mc_GetABRef(void *ptr)

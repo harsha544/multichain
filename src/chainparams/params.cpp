@@ -342,7 +342,7 @@ int mc_MultichainParams::SetParam(const char *param,const char* value,int size)
         memcpy(m_lpData+offset+MC_PRM_PARAM_SIZE_BYTES,value,size);
     }
     
-    mc_PutLE(m_lpData+offset,&size,MC_PRM_PARAM_SIZE_BYTES);
+    mc_PutLE(m_lpData+offset,size,MC_PRM_PARAM_SIZE_BYTES);
     offset+=MC_PRM_PARAM_SIZE_BYTES;
     m_lpCoord[2 * index + 0]=offset;
     m_lpCoord[2 * index + 1]=size;
@@ -384,7 +384,7 @@ int mc_MultichainParams::SetParam(const char *param,int64_t value)
             return MC_ERR_INTERNAL_ERROR;
     }
 
-    mc_PutLE(buf,&value,size);
+    mc_PutLE(buf,value,size);
     return SetParam(param,buf,size);
 }
 
@@ -511,17 +511,17 @@ int mc_MultichainParams::Create(const char* name,int version)
                             case MC_PRM_INT32:
                             case MC_PRM_UINT32:
                                 size=4;
-                                mc_PutLE(ptrData,&(param->m_DefaultIntegerValue),4);
+                                mc_PutLE(ptrData,(param->m_DefaultIntegerValue),4);
                                 break;
                             case MC_PRM_INT64:
                                 size=8;
-                                mc_PutLE(ptrData,&(param->m_DefaultIntegerValue),8);
+                                mc_PutLE(ptrData,(param->m_DefaultIntegerValue),8);
                                 if(strcmp(param->m_Name,"maxstdelementsize") == 0)
                                 {
                                     if(version<20003)
                                     {
                                         override_int64=8192;
-                                        mc_PutLE(ptrData,&override_int64,8);
+                                        mc_PutLE(ptrData,override_int64,8);
                                     }
                                 }                                   
                                 break;
@@ -538,18 +538,18 @@ int mc_MultichainParams::Create(const char* name,int version)
                             network_port=mc_RandomInRange(0,sizeof(FreePortRangesOver50)/sizeof(uint32_t)-1);
                             network_port=FreePortRangesOver50[network_port];
                             network_port+=1+2*mc_RandomInRange(0,24);
-                            mc_PutLE(ptrData,&network_port,4);
+                            mc_PutLE(ptrData,network_port,4);
                         }
                         if(strcmp(param->m_Name,"defaultrpcport") == 0)
                         {
                             size=4;
                             rpc_port=network_port-1;
-                            mc_PutLE(ptrData,&rpc_port,4);
+                            mc_PutLE(ptrData,rpc_port,4);
                         }
                         if(strcmp(param->m_Name,"protocolversion") == 0)
                         {
                             size=4;
-                            mc_PutLE(ptrData,&version,4);
+                            mc_PutLE(ptrData,version,4);
                         }
                         if(strcmp(param->m_Name,"chainname") == 0)
                         {
@@ -608,7 +608,7 @@ int mc_MultichainParams::Create(const char* name,int version)
                         break;
                 }
 
-                mc_PutLE(m_lpData+offset,&size,MC_PRM_PARAM_SIZE_BYTES);
+                mc_PutLE(m_lpData+offset,size,MC_PRM_PARAM_SIZE_BYTES);
                 offset+=MC_PRM_PARAM_SIZE_BYTES;
                 m_lpCoord[2 * i + 0]=offset;
                 m_lpCoord[2 * i + 1]=size;
@@ -807,18 +807,22 @@ int mc_MultichainParams::Read(const char* name,int argc, char* argv[],int create
                     if((MultichainParamArray+i)->m_Type & MC_PRM_DECIMAL)
                     {
                         double d=atof(ptr);
+                        int32_t tmp ; 
                         if(d >= 0)
                         {
-                            *(int32_t*)ptrData=(int32_t)(d*MC_PRM_DECIMAL_GRANULARITY+ParamAccuracy());                            
+                            tmp=(int32_t)(d*MC_PRM_DECIMAL_GRANULARITY+ParamAccuracy());                            
+                            mc_PutLE(ptrData, tmp, 4); 
                         }
                         else
                         {
-                            *(int32_t*)ptrData=-(int32_t)(-d*MC_PRM_DECIMAL_GRANULARITY+ParamAccuracy());                                                        
+                            tmp=(int32_t)(-d*MC_PRM_DECIMAL_GRANULARITY+ParamAccuracy());
+                            mc_PutLE(ptrData, tmp, 4);
                         }
                     }
                     else
                     {
-                        *(int32_t*)ptrData=(int32_t)atol(ptr);
+                            int32_t tmp =(int32_t)atol(ptr);                       
+                            mc_PutLE(ptrData, tmp, 4);
                     }
                     break;
                 case MC_PRM_UINT32:
@@ -838,11 +842,13 @@ int mc_MultichainParams::Read(const char* name,int argc, char* argv[],int create
                     }
                     if((MultichainParamArray+i)->m_Type & MC_PRM_DECIMAL)
                     {
-                        *(int32_t*)ptrData=(int32_t)(atof(ptr)*MC_PRM_DECIMAL_GRANULARITY+ParamAccuracy());
+                        int32_t tmp=(int32_t)(atof(ptr)*MC_PRM_DECIMAL_GRANULARITY+ParamAccuracy());
+                        mc_PutLE(ptrData, tmp, 4); 
                     }
                     else
                     {
-                        *(int32_t*)ptrData=(int32_t)atol(ptr);
+                        int32_t tmp =(int32_t)atol(ptr);
+                        mc_PutLE(ptrData, tmp, 4); 
                     }
                     if(ptr[0]=='-')
                     {
@@ -864,16 +870,20 @@ int mc_MultichainParams::Read(const char* name,int argc, char* argv[],int create
                             return MC_ERR_INVALID_PARAMETER_VALUE;                                                
                         }
                     }
-                    size=8;
-                    *(int64_t*)ptrData=(int64_t)atoll(ptr);
-                    break;
+                    { size=8;
+                      int64_t tmp1 = (int64_t) atoll(ptr); 
+                      mc_PutLE(ptrData, tmp1, 8);
+                      break;
+                    }
                 case MC_PRM_DOUBLE:
                     size=8;
                     *((double*)ptrData)=atof(ptr);
+                    double tmp_2 =(float)atof(ptr);
+                    mc_PutLE(ptrData, tmp_2, 8);
                     break;
             }            
             
-            mc_PutLE(m_lpData+offset,&size,MC_PRM_PARAM_SIZE_BYTES);
+            mc_PutLE(m_lpData+offset,size,MC_PRM_PARAM_SIZE_BYTES);
             offset+=MC_PRM_PARAM_SIZE_BYTES;
             m_lpCoord[2 * i + 0]=offset;
             m_lpCoord[2 * i + 1]=size;
@@ -901,7 +911,7 @@ int mc_MultichainParams::Read(const char* name,int argc, char* argv[],int create
                 {
                     memcpy(ptrData,ptr,size);
                 }            
-                mc_PutLE(m_lpData+offset,&size,MC_PRM_PARAM_SIZE_BYTES);
+                mc_PutLE(m_lpData+offset,size,MC_PRM_PARAM_SIZE_BYTES);
                 offset+=MC_PRM_PARAM_SIZE_BYTES;
                 m_lpCoord[2 * i + 0]=offset;
                 m_lpCoord[2 * i + 1]=size;
@@ -975,7 +985,7 @@ int mc_MultichainParams::Set(const char *name,const char *source,int source_size
                     {
                         memcpy(ptrData,source+j,size);
                     }
-                    mc_PutLE(m_lpData+offset,&size,MC_PRM_PARAM_SIZE_BYTES);
+                    mc_PutLE(m_lpData+offset,size,MC_PRM_PARAM_SIZE_BYTES);
                     offset+=MC_PRM_PARAM_SIZE_BYTES;
                     m_lpCoord[2 * i + 0]=offset;
                     m_lpCoord[2 * i + 1]=size;
@@ -1040,7 +1050,7 @@ int mc_MultichainParams::Clone(const char* name, mc_MultichainParams* source)
             {
                 memcpy(ptrData,ptr,size);
             }
-            mc_PutLE(m_lpData+offset,&size,MC_PRM_PARAM_SIZE_BYTES);
+            mc_PutLE(m_lpData+offset,size,MC_PRM_PARAM_SIZE_BYTES);
             offset+=MC_PRM_PARAM_SIZE_BYTES;
             m_lpCoord[2 * i + 0]=offset;
             m_lpCoord[2 * i + 1]=size;
@@ -1210,7 +1220,7 @@ int mc_MultichainParams::Validate()
                                         break;
                                     case MC_PRM_INT64:
                                         size=8;
-                                        mc_PutLE(ptrData,&((m_lpParams+i)->m_DefaultIntegerValue),8);
+                                        mc_PutLE(ptrData,((m_lpParams+i)->m_DefaultIntegerValue),8);
                                         break;
                                     case MC_PRM_DOUBLE:
                                         size=8;
@@ -1218,11 +1228,11 @@ int mc_MultichainParams::Validate()
                                         break;
                                     default:
                                         size=4;
-                                        mc_PutLE(ptrData,&((m_lpParams+i)->m_DefaultIntegerValue),4);
+                                        mc_PutLE(ptrData,((m_lpParams+i)->m_DefaultIntegerValue),4);
                                         break;
                                 }
                                 
-                                mc_PutLE(m_lpData+offset,&size,MC_PRM_PARAM_SIZE_BYTES);
+                                mc_PutLE(m_lpData+offset,size,MC_PRM_PARAM_SIZE_BYTES);
                                 offset+=MC_PRM_PARAM_SIZE_BYTES;
                                 m_lpCoord[2 * i + 0]=offset;
                                 m_lpCoord[2 * i + 1]=size;

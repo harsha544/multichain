@@ -1340,6 +1340,8 @@ void ThreadOpenConnections()
 
 /* MCHN END */    
     
+ int aa=1;
+        LogPrintf("+++++++++++ net  count:%d, network_status:%s\n", aa++, mc_gState->m_NetworkState);
     // Initiate network connections
     int64_t nStart = GetTime();
     while (true)
@@ -1368,6 +1370,7 @@ void ThreadOpenConnections()
         //
         CAddress addrConnect;
 
+        LogPrintf("+++++++++++ net  count:%d, network_status:%s\n", aa++, mc_gState->m_NetworkState);
         
         // Only connect out to one peer per network group (/16 for IPv4).
         // Do this here so we don't have to critsect vNodes inside mapAddresses critsect.
@@ -1666,6 +1669,7 @@ bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOu
 
 void ThreadMessageHandler()
 {
+        LogPrintf("++++++++++ ThreadMessageHandler\n");
     SetThreadPriority(THREAD_PRIORITY_BELOW_NORMAL);
     while (true)
     {
@@ -1678,6 +1682,7 @@ void ThreadMessageHandler()
             }
         }
 
+        LogPrintf("++++++++++ Poll the connected nodes for messages \n");
         // Poll the connected nodes for messages
         CNode* pnodeTrickle = NULL;
         if (!vNodesCopy.empty())
@@ -1689,6 +1694,8 @@ void ThreadMessageHandler()
         {
             if (pnode->fDisconnect)
                 continue;
+
+        LogPrintf("++++++++++ Receive messagess \n");
 
             // Receive messages
             {

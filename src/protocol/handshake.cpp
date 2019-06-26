@@ -388,6 +388,7 @@ bool PushMultiChainVerack(CNode* pfrom, bool fIsVerackack)
     vector<unsigned char>vSigScript;
     uint64_t nNonce;
     
+ LogPrintf("+++ mchn: start PushMultiChainVerack %s\n", pfrom->addr.ToString());
     if(!fIsVerackack)
     {
         if(mc_gState->m_NetworkParams->m_Status != MC_PRM_STATUS_VALID)         // Ignoring version message from seed node in initial handshake
