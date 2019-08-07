@@ -513,6 +513,9 @@ void CNode::PushVersion()
     {
         subver=FormatSubVersion("MultiChain", mc_gState->GetProtocolVersion(), std::vector<string>());
     }
+	// convert to LE for transfer
+    addrYou.SetPort(ByteSwapLE16(addrYou.GetPort()));
+    addrMe.SetPort(ByteSwapLE16(addrMe.GetPort()));
     PushMessage("version", PROTOCOL_VERSION, nLocalServices, nTime, addrYou, addrMe,
                 nLocalHostNonce, subver, nBestHeight, true);
 /* MCHN END */
@@ -2370,7 +2373,7 @@ void CNode::EndMessage() UNLOCK_FUNCTION(cs_vSend)
 
     // Set the size
     unsigned int nSize = ssSend.size() - CMessageHeader::HEADER_SIZE;
-    mc_PutLE((char*)&ssSend[CMessageHeader::MESSAGE_SIZE_OFFSET],nSize,sizeof(nSize));;
+    mc_PutLE((char*)&ssSend[CMessageHeader::MESSAGE_SIZE_OFFSET],nSize,sizeof(nSize));
 
     // Set the checksum
     uint256 hash = Hash(ssSend.begin() + CMessageHeader::HEADER_SIZE, ssSend.end());

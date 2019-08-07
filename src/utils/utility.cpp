@@ -66,8 +66,7 @@ void mc_Delete(void *ptr)
 void mc_PutLE(void *dest,long src,int dest_size)
 {
    #if WORDS_BIGENDIAN == 1
-	uint64_t src_tmp = src;
-	src = bswap_64(src_tmp);
+	src = bswap_64(src);
    #endif
 	memcpy(dest, &src,dest_size);
 }

@@ -13,23 +13,16 @@
 uint256 CBlockHeader::GetHash() const 
 {
 
-// byte swap the 4 int/unsigned int values
+// byte swap the 4 int/unsigned int values to LE
  #if WORDS_BIGENDIAN == 1
-        CBlockHeader BE; 
-        uint32_t src_tmp;
-        src_tmp= bswap_32(nVersion);
-        BE.nVersion = src_tmp;
-        src_tmp = bswap_32(nTime);
-        BE.nTime = src_tmp;
-        src_tmp = bswap_32(nBits);
-        BE.nBits = src_tmp;
-        src_tmp = bswap_32(nNonce);
-        BE.nNonce = src_tmp;
-        BE.hashPrevBlock=hashPrevBlock;
-        BE.hashPrevBlock.ByteSwap();
-        BE.hashMerkleRoot=hashMerkleRoot;
-        BE.hashMerkleRoot.ByteSwap();
-	return Hash(BEGIN(BE.nVersion), END(BE.nNonce)).ByteSwap(); 
+	CBlockHeader CBH; 
+	CBH.nVersion= bswap_32(nVersion);
+	CBH.nTime = bswap_32(nTime);
+	CBH.nBits = bswap_32(nBits);
+	CBH.nNonce = bswap_32(nNonce);
+	CBH.hashPrevBlock=hashPrevBlock;
+	CBH.hashMerkleRoot=hashMerkleRoot;
+ return Hash(BEGIN(CBH.nVersion), END(CBH.nNonce));
 #endif
 
 

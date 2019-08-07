@@ -17,6 +17,7 @@
 #include "chain/pow.h"
 #include "storage/txdb.h"
 #include "chain/txmempool.h"
+#include "crypto/common.h"
 #include "ui/ui_interface.h"
 #include "utils/util.h"
 #include "utils/utilmoneystr.h"
@@ -5693,6 +5694,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         CAddress addrFrom;
         uint64_t nNonce = 1;
         vRecv >> pfrom->nVersion >> pfrom->nServices >> nTime >> addrMe;
+	addrMe.SetPort(ByteSwapLE16(addrMe.GetPort()));   // convert back to BE
         if (pfrom->nVersion < MIN_PEER_PROTO_VERSION)
         {
             // disconnect from peers older than this proto version
@@ -5707,6 +5709,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             pfrom->nVersion = 300;
         if (!vRecv.empty())
             vRecv >> addrFrom >> nNonce;
+	addrFrom.SetPort(ByteSwapLE16(addrFrom.GetPort()));   // convert back to BE
         if (!vRecv.empty()) {
             vRecv >> LIMITED_STRING(pfrom->strSubVer, 256);
             pfrom->cleanSubVer = SanitizeString(pfrom->strSubVer);
@@ -5995,6 +5998,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         {
             boost::this_thread::interruption_point();
 
+	    addr.SetPort(ByteSwapLE16(addr.GetPort()));  // convert to BE on BE arch;
             if (addr.nTime <= 100000000 || addr.nTime > nNow + 10 * 60)
                 addr.nTime = nNow - 5 * 24 * 60 * 60;
             pfrom->AddAddressKnown(addr);
@@ -7086,8 +7090,10 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         {
             vector<CAddress> vAddr;
             vAddr.reserve(pto->vAddrToSend.size());
-            BOOST_FOREACH(const CAddress& addr, pto->vAddrToSend)
+            BOOST_FOREACH( CAddress& addr, pto->vAddrToSend)
             {
+		// convert to BigEndian on BE arch
+		addr.SetPort(ByteSwapLE16(addr.GetPort()));
                 // returns true if wasn't already contained in the set
                 if (pto->setAddrKnown.insert(addr).second)
                 {

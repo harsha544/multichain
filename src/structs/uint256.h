@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <crypto/common.h>
 
 class uint_error : public std::runtime_error {
 public:
@@ -48,9 +49,9 @@ public:
     }
 
     base_uint(uint64_t b)
-    {
-        pn[0] = (unsigned int)b;
-        pn[1] = (unsigned int)(b >> 32);
+    { 
+        pn[0] = ByteSwapLE32((unsigned int)b);
+        pn[1] = ByteSwapLE32((unsigned int)(b >> 32));
         for (int i = 2; i < WIDTH; i++)
             pn[i] = 0;
     }
@@ -66,7 +67,7 @@ public:
         return true;
     }
 
-    const base_uint operator~() const
+   const base_uint operator~() const
     {
         base_uint ret;
         for (int i = 0; i < WIDTH; i++)
@@ -87,8 +88,8 @@ public:
 
     base_uint& operator=(uint64_t b)
     {
-        pn[0] = (unsigned int)b;
-        pn[1] = (unsigned int)(b >> 32);
+        pn[0] =  ByteSwapLE32((unsigned int)b);
+        pn[1] =  ByteSwapLE32((unsigned int)(b >> 32));
         for (int i = 2; i < WIDTH; i++)
             pn[i] = 0;
         return *this;
@@ -117,15 +118,15 @@ public:
 
     base_uint& operator^=(uint64_t b)
     {
-        pn[0] ^= (unsigned int)b;
-        pn[1] ^= (unsigned int)(b >> 32);
+        pn[0] ^= ByteSwapLE32((unsigned int)b);
+        pn[1] ^= ByteSwapLE32((unsigned int)(b >> 32));
         return *this;
     }
 
     base_uint& operator|=(uint64_t b)
     {
-        pn[0] |= (unsigned int)b;
-        pn[1] |= (unsigned int)(b >> 32);
+        pn[0] |=  ByteSwapLE32((unsigned int)b);
+        pn[1] |=  ByteSwapLE32((unsigned int)(b >> 32));
         return *this;
     }
 
@@ -134,13 +135,17 @@ public:
 
     base_uint& operator+=(const base_uint& b)
     {
+        base_uint b1 = b;
+        b1.ByteSwap();
+        base_uint& a = (*this).ByteSwap();
         uint64_t carry = 0;
         for (int i = 0; i < WIDTH; i++)
         {
-            uint64_t n = carry + pn[i] + b.pn[i];
-            pn[i] = n & 0xffffffff;
+            uint64_t n = carry + a.pn[i] + b1.pn[i];
+            a.pn[i] = n & 0xffffffff;
             carry = n >> 32;
         }
+        *this = a.ByteSwap();
         return *this;
     }
 
@@ -206,7 +211,10 @@ public:
 
     int CompareTo(const base_uint& b) const;
     bool EqualTo(uint64_t b) const;
+    base_uint& ByteSwap();  // keep base_uint as LE (Little-Endian) format, convert it to BE(Big-Endian) before any calculations
+                            // and then convert it back to  LE
 
+ 
     friend inline const base_uint operator+(const base_uint& a, const base_uint& b) { return base_uint(a) += b; }
     friend inline const base_uint operator-(const base_uint& a, const base_uint& b) { return base_uint(a) -= b; }
     friend inline const base_uint operator*(const base_uint& a, const base_uint& b) { return base_uint(a) *= b; }
@@ -265,7 +273,7 @@ public:
     uint64_t GetLow64() const
     {
         assert(WIDTH >= 2);
-        return pn[0] | (uint64_t)pn[1] << 32;
+        return ByteSwapLE32(pn[0]) | ((uint64_t)ByteSwapLE32(pn[1]) << 32);
     }
 
     unsigned int GetSerializeSize(int nType, int nVersion) const
@@ -284,7 +292,6 @@ public:
     {
         s.read((char*)pn, sizeof(pn));
     }
-    base_uint& ByteSwap();
 };
 
 /** 96-bit unsigned big integer. */

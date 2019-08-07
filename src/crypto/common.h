@@ -133,13 +133,21 @@ uint64_t static inline ByteSwapLE64( uint64_t x)
 #endif
    return x;
 }
-void static printout(char * name,  char * aa, int leng) {
+uint16_t static inline ByteSwapLE16( uint16_t x)
+{
+#if WORDS_BIGENDIAN == 1
+   return ((x & 0x00FF) << 8) | ((x & 0xFF00) >> 8);
+#endif
+   return x;
+}
 
+void static printout(char * name,  char * aa, int leng) {
 printf("+++ %s=0x", name);
 for (int i = 0; i < leng; i++)
 {
-  printf("%02X", (uint8_t) *aa);
-  aa=aa+1;
+ printf("%02X", (uint8_t) *aa);
+ aa=aa+1;
+
 }
   printf("\n");
 }

@@ -3551,6 +3551,7 @@ CScript ParseRawMetadataNotRefactored(Value param,uint32_t allowed_objects,mc_En
                     }            
                     if(multiple_is_set)
                     {
+			multiple =ByteSwapLE32(multiple);
                         lpDetails->SetSpecialParamValue(MC_ENT_SPRM_ASSET_MULTIPLE,(unsigned char*)&multiple,4);
                     }
                     if(entity_name.size())

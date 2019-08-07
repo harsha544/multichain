@@ -14,6 +14,7 @@
 #include <vector>
 #include <string>
 #include <boost/variant/apply_visitor.hpp>
+#include "crypto/common.h"
 #include <boost/variant/static_visitor.hpp>
 
 #include "multichain/multichain.h"
@@ -262,6 +263,7 @@ std::string EncodeBase58Check(const std::vector<unsigned char>& vchIn)
 /* MCHN START */
     int32_t checksum=(int32_t)mc_GetLE(&hash,4);
     checksum ^= (int32_t)mc_gState->m_NetworkParams->GetInt64Param("addresschecksumvalue");
+    checksum =ByteSwapLE32(checksum);  // to LE
     vch.insert(vch.end(), (unsigned char*)&checksum, (unsigned char*)&checksum + 4);
 //    vch.insert(vch.end(), (unsigned char*)&hash, (unsigned char*)&hash + 4);
 /* MCHN END */    
@@ -282,6 +284,7 @@ bool DecodeBase58Check(const char* psz, std::vector<unsigned char>& vchRet)
 /* MCHN START */
     int32_t checksum=(int32_t)mc_GetLE(&hash,4);
     checksum ^= (int32_t)mc_gState->m_NetworkParams->GetInt64Param("addresschecksumvalue");
+    checksum =ByteSwapLE32(checksum);  // to LE 	
     
     if (memcmp((unsigned char*)&checksum, &vchRet.end()[-4], 4) != 0) {
 //    if (memcmp(&hash, &vchRet.end()[-4], 4) != 0) {

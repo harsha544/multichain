@@ -347,6 +347,7 @@ bool ProcessMultichainVerack(CNode* pfrom, CDataStream& vRecv,bool fIsVerackack,
             
             if(mc_gState->m_NetworkParams->m_Status == MC_PRM_STATUS_VALID)
             {
+		nNonce= ByteSwapLE64(nNonce);
                 if(!VerifyMultichainVerackHash(sParameterSetHash,nNonce))
                 {
                     LogPrintf("mchn: Parameter set received from peer %d doesn't match received hash\n", pfrom->id);
@@ -404,6 +405,7 @@ bool PushMultiChainVerack(CNode* pfrom, bool fIsVerackack)
             pfrom->fVerackackReceived)
         {
             vParameterSet=vector<unsigned char>(mc_gState->m_NetworkParams->m_lpData,mc_gState->m_NetworkParams->m_lpData+mc_gState->m_NetworkParams->m_Size);        
+	    LogPrintf("mchn: Sending full parameter set to %s\n", pfrom->addr.ToString());
         }
         else
         {
@@ -451,7 +453,7 @@ bool PushMultiChainVerack(CNode* pfrom, bool fIsVerackack)
         
     vParameterSetHash=vector<unsigned char>((unsigned char*)&hash_to_send, (unsigned char*)&hash_to_send+32);
     nNonce =ByteSwapLE64(nNonce);
- 
+
     CHashWriter ssSig(SER_GETHASH, 0);
     ssSig << vParameterSetHash;
     ssSig << vector<unsigned char>((unsigned char*)&nNonce, (unsigned char*)&nNonce+sizeof(nNonce));

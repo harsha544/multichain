@@ -594,6 +594,7 @@ CScript RawDataScriptIssue(Value *param,mc_Script *lpDetails,mc_Script *lpDetail
                 }
                 else
                 {
+		    multiple=ByteSwapLE32(multiple); // convert to LE
                     lpDetails->SetSpecialParamValue(MC_ENT_SPRM_ASSET_MULTIPLE,(unsigned char*)&multiple,4);
                 }
             }

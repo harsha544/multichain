@@ -18,6 +18,7 @@
 #include <string.h>
 #include <utility>
 #include <vector>
+#include "crypto/common.h"
 
 class CScript;
 
@@ -197,21 +198,21 @@ void WriteCompactSize(Stream& os, uint64_t nSize)
     else if (nSize <= std::numeric_limits<unsigned short>::max())
     {
         unsigned char chSize = 253;
-        unsigned short xSize = nSize;
+        unsigned short xSize = ByteSwapLE16(nSize);
         WRITEDATA(os, chSize);
         WRITEDATA(os, xSize);
     }
     else if (nSize <= std::numeric_limits<unsigned int>::max())
     {
         unsigned char chSize = 254;
-        unsigned int xSize = nSize;
+        unsigned int xSize =  ByteSwapLE32(nSize);
         WRITEDATA(os, chSize);
         WRITEDATA(os, xSize);
     }
     else
     {
         unsigned char chSize = 255;
-        uint64_t xSize = nSize;
+        uint64_t xSize = ByteSwapLE64(nSize);
         WRITEDATA(os, chSize);
         WRITEDATA(os, xSize);
     }
@@ -232,7 +233,7 @@ uint64_t ReadCompactSize(Stream& is)
     {
         unsigned short xSize;
         READDATA(is, xSize);
-        nSizeRet = xSize;
+        nSizeRet = ByteSwapLE16(xSize);
         if (nSizeRet < 253)
             throw std::ios_base::failure("non-canonical ReadCompactSize()");
     }
@@ -240,7 +241,7 @@ uint64_t ReadCompactSize(Stream& is)
     {
         unsigned int xSize;
         READDATA(is, xSize);
-        nSizeRet = xSize;
+        nSizeRet = ByteSwapLE32(xSize);
         if (nSizeRet < 0x10000u)
             throw std::ios_base::failure("non-canonical ReadCompactSize()");
     }
@@ -248,7 +249,7 @@ uint64_t ReadCompactSize(Stream& is)
     {
         uint64_t xSize;
         READDATA(is, xSize);
-        nSizeRet = xSize;
+        nSizeRet = ByteSwapLE64(xSize);
         if (nSizeRet < 0x100000000ULL)
             throw std::ios_base::failure("non-canonical ReadCompactSize()");
     }
